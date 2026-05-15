@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Tin nhắn - Quản trị</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="admin-body">
+    <header>
+      <div class="nav-container">
+        <a href="admin-rooms.html" class="logo">Meadows Q&Q</a>
+        <div class="nav-links">
+          <a href="admin-rooms.html">Quản lý phòng</a>
+          <a href="admin-books.html">Đơn đặt phòng</a>
+          <a href="admin-msgs.html" class="active">Tin nhắn</a>
+          <a href="admin-location.html">V&#7883; tr&iacute;</a>
+          <a href="index.html">Trang chủ</a>
+          <a href="#" onclick="logout()" class="btn-logout">Đăng xuất</a>
+        </div>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      <h2 class="page-title" style="text-align: left; margin-bottom: 30px">
+        Hòm thư khách hàng
+      </h2>
+      <div id="msgsContainer"></div>
+    </div>
+
+    <footer><p>Meadows Q&Q © 2026 - Hệ thống đặt phòng trực tuyến</p></footer>
+
+    <script>
+      if (!localStorage.getItem("admin_token"))
+        window.location.href = "admin-login.html";
+
+      function logout() {
+        localStorage.removeItem("admin_token");
+        window.location.href = "admin-login.html";
+      }
+
+      window.onload = function () {
+        fetch("/notification")
+          .then((r) => r.json())
+          .then((data) => {
+            const container = document.getElementById("msgsContainer");
+            container.innerHTML = "";
+            data.forEach((m) => {
+              const isUnread = !m.isRead;
+              container.innerHTML += `
+                        <div class="admin-card" style="border-left: 5px solid ${isUnread ? "#3498db" : "#cbd5e1"}; background: ${isUnread ? "#fff" : "#f8fafc"}">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                                <h4 style="margin:0; color:#1e293b;">${m.title}</h4>
+                                <div>
+                                    ${isUnread ? `<button class="btn-book" onclick="markRead(${m.id})" style="padding:4px 10px; font-size:0.7rem; margin-right:10px;">Đã xem</button>` : ""}
+                                    <button class="btn-danger" onclick="deleteMsg(${m.id})">Xóa</button>
+                                </div>
+                            </div>
+                            <p style="color:#475569; font-size:0.9rem; white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word; max-width:100%; background:#f1f5f9; padding:15px; border-radius:8px;">${m.message}</p>
+                            <small style="color:#94a3b8;">Ngày nhận: ${m.createdAt}</small>
+                        </div>`;
+            });
+          });
+      };
+
+      function markRead(id) {
+        fetch(`/notification/${id}/read`, { method: "PUT" }).then(() =>
+          window.location.reload(),
+        );
+      }
+      function deleteMsg(id) {
+        if (confirm("Xóa vĩnh viễn?"))
+          fetch(`/notification/${id}`, { method: "DELETE" }).then(() =>
+            window.location.reload(),
+          );
+      }
+    </script>
+  </body>
+</html>

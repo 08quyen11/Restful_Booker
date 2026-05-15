@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>V&#7883; tr&iacute; - Qu&#7843;n tr&#7883;</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      .location-admin-grid {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 30px;
+        align-items: start;
+      }
+      .map-preview iframe {
+        width: 100%;
+        height: 360px;
+        border: 0;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+      }
+      .hint {
+        color: #64748b;
+        font-size: 0.85rem;
+        margin-top: 6px;
+      }
+      @media (max-width: 900px) {
+        .location-admin-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body class="admin-body">
+    <header>
+      <div class="nav-container">
+        <a href="admin-rooms.html" class="logo">Meadows Q&Q</a>
+        <div class="nav-links">
+          <a href="admin-rooms.html">Quản lý phòng</a>
+          <a href="admin-books.html">Đơn đặt phòng</a>
+          <a href="admin-msgs.html">Tin nhắn</a>
+          <a href="admin-location.html" class="active">V&#7883; tr&iacute;</a>
+          <a href="index.html">Trang chủ</a>
+          <a href="#" onclick="logout()" class="btn-logout">Đăng xuất</a>
+        </div>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      <h2 class="page-title" style="text-align: left; margin-bottom: 30px">
+        Chỉnh sửa vị trí
+      </h2>
+
+      <div class="location-admin-grid">
+        <div class="admin-card">
+          <form id="locationForm" class="grid-form">
+            <div class="full-width">
+              <label>Tên địa điểm</label>
+              <input type="text" id="loc_title" required />
+            </div>
+            <div class="full-width">
+              <label>Mô tả</label>
+              <textarea id="loc_description" rows="5" required></textarea>
+            </div>
+            <div>
+              <label>Địa chỉ dòng 1</label>
+              <input type="text" id="loc_address_1" required />
+            </div>
+            <div>
+              <label>Địa chỉ dòng 2</label>
+              <input type="text" id="loc_address_2" />
+            </div>
+            <div>
+              <label>Số điện thoại</label>
+              <input type="text" id="loc_phone" required />
+            </div>
+            <div>
+              <label>Email</label>
+              <input type="email" id="loc_email" required />
+            </div>
+            <div>
+              <label>Giờ check-in</label>
+              <input type="time" id="loc_checkin" required />
+            </div>
+            <div>
+              <label>Giờ check-out</label>
+              <input type="time" id="loc_checkout" required />
+            </div>
+            <div class="full-width">
+              <label>URL nhúng Google Maps</label>
+              <textarea
+                id="loc_map"
+                rows="4"
+                required
+                oninput="updateMapPreview()"
+              ></textarea>
+              <p class="hint">
+                Dán link trong thuộc tính src của iframe Google Maps.
+              </p>
+            </div>
+            <div class="full-width">
+              <button type="submit" class="btn-submit">Lưu vị trí</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="admin-card">
+          <h3 style="margin-bottom: 20px; color: #1e293b">Xem trước bản đồ</h3>
+          <div class="map-preview">
+            <iframe
+              id="mapPreview"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+            ></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p>Meadows Q&Q © 2026 - T&iacute;ch h&#7907;p Spring Boot</p>
+    </footer>
+
+    <script>
+      if (!localStorage.getItem("admin_token"))
+        window.location.href = "admin-login.html";
+
+      function logout() {
+        localStorage.removeItem("admin_token");
+        window.location.href = "admin-login.html";
+      }
+
+      window.onload = function () {
+        loadLocation();
+      };
+
+      function loadLocation() {
+        fetch("/location")
+          .then((r) => r.json())
+          .then((location) => {
+            document.getElementById("loc_title").value = location.title || "";
+            document.getElementById("loc_description").value =
+              location.description || "";
+            document.getElementById("loc_address_1").value =
+              location.addressLine1 || "";
+            document.getElementById("loc_address_2").value =
+              location.addressLine2 || "";
+            document.getElementById("loc_phone").value = location.phone || "";
+            document.getElementById("loc_email").value = location.email || "";
+            document.getElementById("loc_checkin").value =
+              location.checkinTime || "";
+            document.getElementById("loc_checkout").value =
+              location.checkoutTime || "";
+            document.getElementById("loc_map").value =
+              location.mapEmbedUrl || "";
+            updateMapPreview();
+          })
+          .catch(() => alert("Không tải được thông tin location!"));
+      }
+
+      function updateMapPreview() {
+        const url = document.getElementById("loc_map").value.trim();
+        document.getElementById("mapPreview").src = url;
+      }
+
+      function isBlank(value) {
+        return !value || value.trim().length === 0;
+      }
+
+      function validateLocationForm(payload) {
+        if (
+          isBlank(payload.title) ||
+          isBlank(payload.description) ||
+          isBlank(payload.addressLine1) ||
+          isBlank(payload.phone) ||
+          isBlank(payload.email) ||
+          isBlank(payload.checkinTime) ||
+          isBlank(payload.checkoutTime) ||
+          isBlank(payload.mapEmbedUrl)
+        ) {
+          alert("Vui lòng nhập đầy đủ các trường bắt buộc!");
+          return false;
+        }
+
+        if (!document.getElementById("loc_email").checkValidity()) {
+          alert("Email không hợp lệ!");
+          return false;
+        }
+
+        return true;
+      }
+
+      document.getElementById("locationForm").onsubmit = async function (e) {
+        e.preventDefault();
+
+        const payload = {
+          title: document.getElementById("loc_title").value.trim(),
+          description: document.getElementById("loc_description").value.trim(),
+          addressLine1: document.getElementById("loc_address_1").value.trim(),
+          addressLine2: document.getElementById("loc_address_2").value.trim(),
+          phone: document.getElementById("loc_phone").value.trim(),
+          email: document.getElementById("loc_email").value.trim(),
+          checkinTime: document.getElementById("loc_checkin").value,
+          checkoutTime: document.getElementById("loc_checkout").value,
+          mapEmbedUrl: document.getElementById("loc_map").value.trim(),
+        };
+
+        if (!validateLocationForm(payload)) return;
+
+        const response = await fetch("/location", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (response.ok) {
+          alert("Cập nhật location thành công!");
+          loadLocation();
+        } else {
+          const errs = await response.json();
+          let msg = "Lỗi:\n";
+          for (let k in errs) msg += `- ${errs[k]}\n`;
+          alert(msg);
+        }
+      };
+    </script>
+  </body>
+</html>

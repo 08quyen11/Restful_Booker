@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>&#272;&#259;ng nh&#7853;p qu&#7843;n tr&#7883;</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body
+    style="
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: #eef2f3;
+    "
+  >
+    <div
+      class="form-box"
+      style="width: 450px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1)"
+    >
+      <h2 style="text-align: center; margin-bottom: 25px; color: #2c3e50">
+        QUẢN TRỊ HỆ THỐNG
+      </h2>
+      <form id="loginForm" class="grid-form">
+        <div class="full-width">
+          <label>Tài khoản</label
+          ><input type="text" id="username" required placeholder="admin" />
+        </div>
+        <div class="full-width">
+          <label>Mật khẩu</label
+          ><input
+            type="password"
+            id="password"
+            required
+            placeholder="password"
+          />
+        </div>
+        <div class="full-width">
+          <button type="submit" class="btn-submit" style="margin-top: 10px">
+            Đăng Nhập
+          </button>
+        </div>
+      </form>
+
+      <div style="text-align: center; margin-top: 15px">
+        <a
+          href="index.html"
+          style="font-size: 0.9rem; color: #3498db; text-decoration: none"
+          >← Quay lại trang web</a
+        >
+      </div>
+    </div>
+
+    <script>
+      document.getElementById("loginForm").onsubmit = function (e) {
+        e.preventDefault();
+        fetch("/auth", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: document.getElementById("username").value,
+            password: document.getElementById("password").value,
+          }),
+        })
+          .then((res) => {
+            if (!res.ok) throw new Error();
+            return res.json();
+          })
+          .then((data) => {
+            localStorage.setItem("admin_token", data.token);
+            window.location.href = "admin-rooms.html"; // Vào thẳng trang quản lý phòng
+          })
+          .catch(() => alert("❌ Sai tài khoản hoặc mật khẩu!"));
+      };
+    </script>
+  </body>
+</html>

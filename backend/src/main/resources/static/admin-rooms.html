@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quản lý phòng - Quản trị</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <style>
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+      .modal-content {
+        background-color: #fff;
+        margin: 8% auto;
+        padding: 30px;
+        border-radius: 10px;
+        width: 500px;
+        max-width: 90%;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+      }
+      .close-modal {
+        color: #94a3b8;
+        float: right;
+        font-size: 24px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      .close-modal:hover {
+        color: #0f172a;
+      }
+      .btn-edit {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-right: 5px;
+        font-weight: 600;
+      }
+      .btn-edit:hover {
+        background: #2563eb;
+      }
+    </style>
+  </head>
+  <body class="admin-body">
+    <header>
+      <div class="nav-container">
+        <a href="admin-rooms.html" class="logo">Meadows Q&Q</a>
+        <div class="nav-links">
+          <a href="admin-rooms.html" class="active">Quản lý phòng</a>
+          <a href="admin-books.html">Đơn đặt phòng</a>
+          <a href="admin-msgs.html">Tin nhắn</a>
+          <a href="admin-location.html">Vị trí</a>
+          <a href="index.html">Trang chủ</a>
+          <a href="#" onclick="logout()" class="btn-logout">Đăng xuất</a>
+        </div>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      <h2 class="page-title" style="text-align: left; margin-bottom: 30px">
+        Hệ thống phòng nghỉ
+      </h2>
+      <div class="admin-card">
+        <h3 style="margin-bottom: 20px; color: #1e293b">+ Thêm phòng mới</h3>
+        <form id="addRoomForm" class="grid-form">
+          <div>
+            <label>Tên phòng</label
+            ><input
+              type="text"
+              id="r_name"
+              placeholder="Ví dụ: P101"
+              minlength="2"
+              maxlength="50"
+              required
+            />
+          </div>
+          <div>
+            <label>Loại phòng</label
+            ><select id="r_type">
+              <option value="Single Room">Phòng đơn</option>
+              <option value="Double Room">Phòng đôi</option>
+              <option value="Suite Room">Phòng suite</option>
+            </select>
+          </div>
+          <div>
+            <label>Giá/đêm (VNĐ)</label
+            ><input type="number" id="r_price" placeholder="500000" />
+          </div>
+          <div>
+            <label>Chọn file ảnh từ máy tính:</label
+            ><input type="file" id="r_image_file" accept="image/*" required />
+          </div>
+          <div class="full-width">
+            <button type="submit" class="btn-submit" style="width: 200px">
+              Lưu phòng
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="admin-card">
+        <h3 style="margin-bottom: 15px">Danh sách phòng hiện có</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Hình ảnh</th>
+              <th>Phòng</th>
+              <th>Loại</th>
+              <th>Giá tiền</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody id="roomsTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <footer><p>Meadows Q&Q © 2026 - Hệ thống đặt phòng trực tuyến</p></footer>
+
+    <div id="editModal" class="modal">
+      <div class="modal-content">
+        <span class="close-modal" onclick="closeEditModal()">&times;</span>
+        <h3 style="margin-bottom: 20px; color: #1e293b">
+          Cập nhật thông tin phòng
+        </h3>
+        <form
+          id="editRoomForm"
+          class="grid-form"
+          style="display: flex; flex-direction: column; gap: 15px"
+        >
+          <input type="hidden" id="edit_id" />
+          <div>
+            <label>Tên phòng</label
+            ><input
+              type="text"
+              id="edit_name"
+              minlength="2"
+              maxlength="50"
+              required
+              style="width: 100%; padding: 8px"
+            />
+          </div>
+          <div>
+            <label>Loại phòng</label
+            ><select id="edit_type" style="width: 100%; padding: 8px">
+              <option value="Single Room">Phòng đơn</option>
+              <option value="Double Room">Phòng đôi</option>
+              <option value="Suite Room">Phòng suite</option>
+            </select>
+          </div>
+          <div>
+            <label>Giá/đêm (VNĐ)</label
+            ><input
+              type="number"
+              id="edit_price"
+              style="width: 100%; padding: 8px"
+            />
+          </div>
+          <div>
+            <label>Trạng thái</label
+            ><select id="edit_available" style="width: 100%; padding: 8px">
+              <option value="true">Đang hoạt động</option>
+              <option value="false">Tạm khóa / Bảo trì</option>
+            </select>
+          </div>
+          <div>
+            <label>Ảnh mới (bỏ trống nếu giữ ảnh cũ):</label
+            ><input
+              type="file"
+              id="edit_image_file"
+              accept="image/*"
+              style="width: 100%"
+            />
+          </div>
+          <button type="submit" class="btn-submit" style="margin-top: 10px">
+            Cập nhật
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      if (!localStorage.getItem("admin_token"))
+        window.location.href = "admin-login.html";
+      let roomsCache = [];
+
+      function logout() {
+        localStorage.removeItem("admin_token");
+        window.location.href = "admin-login.html";
+      }
+      function formatCurrency(amount) {
+        return `${new Intl.NumberFormat("vi-VN").format(amount || 0)} VNĐ`;
+      }
+
+      window.onload = function loadData() {
+        fetch("/room")
+          .then((r) => r.json())
+          .then((rooms) => {
+            roomsCache = rooms;
+            const tbody = document.getElementById("roomsTable");
+            tbody.innerHTML = "";
+            rooms.forEach((r) => {
+              const imgUrl =
+                r.image || "https://placehold.co/150x100?text=No+Image";
+              tbody.innerHTML += `<tr><td><img src="${imgUrl}" style="width: 90px; height: 60px; object-fit: cover; border-radius: 6px;"></td><td><strong style="color: #1e293b; font-size: 1.05rem;">${r.roomName}</strong></td><td><span class="badge badge-blue">${r.roomType || "Tiêu chuẩn"}</span></td><td><strong style="color:#e74c3c; font-size: 1.05rem;">${formatCurrency(r.pricePerNight)}</strong></td><td><button class="btn-edit" onclick="openEditModal(${r.id})">Sửa</button><button class="btn-danger" onclick="deleteRoom(${r.id})">Xóa</button></td></tr>`;
+            });
+          })
+          .catch((err) => console.error("Lỗi tải dữ liệu:", err));
+      };
+
+      function handleBackendErrors(errResponse) {
+        let errorMsg = "Lỗi từ máy chủ:\n";
+        for (let field in errResponse) {
+          errorMsg += `- ${errResponse[field]}\n`;
+        }
+        alert(errorMsg);
+      }
+      function normalizeRoomName(name) {
+        return name.trim().toLowerCase();
+      }
+      function roomNameExists(roomName, currentRoomId = null) {
+        const normalizedName = normalizeRoomName(roomName);
+        return roomsCache.some(
+          (room) =>
+            normalizeRoomName(room.roomName || "") === normalizedName &&
+            String(room.id) !== String(currentRoomId),
+        );
+      }
+      function validateRoomForm(roomName, currentRoomId = null) {
+        if (roomName.length < 2 || roomName.length > 50) {
+          alert("Tên phòng phải từ 2 đến 50 ký tự!");
+          return false;
+        }
+        if (roomNameExists(roomName, currentRoomId)) {
+          alert("Tên phòng đã tồn tại! Vui lòng chọn tên khác.");
+          return false;
+        }
+        return true;
+      }
+
+      document.getElementById("addRoomForm").onsubmit = async function (e) {
+        e.preventDefault();
+        const fileInput = document.getElementById("r_image_file");
+        const roomName = document.getElementById("r_name").value.trim();
+        let imageUrl = "";
+        if (!validateRoomForm(roomName)) return;
+        if (fileInput.files.length > 0) {
+          const formData = new FormData();
+          formData.append("file", fileInput.files[0]);
+          try {
+            const uploadRes = await fetch("/upload-image", {
+              method: "POST",
+              body: formData,
+            });
+            if (!uploadRes.ok) throw new Error("Upload thất bại");
+            imageUrl = await uploadRes.text();
+          } catch (error) {
+            alert("Lỗi khi tải ảnh lên!");
+            return;
+          }
+        }
+        const payload = {
+          roomName,
+          roomType: document.getElementById("r_type").value,
+          pricePerNight: parseInt(document.getElementById("r_price").value, 10),
+          image: imageUrl,
+          isAvailable: true,
+        };
+        const response = await fetch("/room", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (response.ok) {
+          alert("Thêm phòng thành công!");
+          window.location.reload();
+        } else {
+          handleBackendErrors(await response.json());
+        }
+      };
+
+      async function openEditModal(id) {
+        try {
+          const res = await fetch(`/room/${id}`);
+          if (res.ok) {
+            const room = await res.json();
+            document.getElementById("edit_id").value = room.id;
+            document.getElementById("edit_name").value = room.roomName;
+            document.getElementById("edit_type").value = room.roomType;
+            document.getElementById("edit_price").value = room.pricePerNight;
+            document.getElementById("edit_available").value =
+              room.isAvailable !== false ? "true" : "false";
+            document.getElementById("editModal").style.display = "block";
+          }
+        } catch (e) {
+          alert("Không thể tải thông tin phòng!");
+        }
+      }
+      function closeEditModal() {
+        document.getElementById("editModal").style.display = "none";
+        document.getElementById("editRoomForm").reset();
+      }
+      document.getElementById("editRoomForm").onsubmit = async function (e) {
+        e.preventDefault();
+        const id = document.getElementById("edit_id").value;
+        const fileInput = document.getElementById("edit_image_file");
+        const roomName = document.getElementById("edit_name").value.trim();
+        let imageUrl = "";
+        if (!validateRoomForm(roomName, id)) return;
+        if (fileInput.files.length > 0) {
+          const formData = new FormData();
+          formData.append("file", fileInput.files[0]);
+          const uploadRes = await fetch("/upload-image", {
+            method: "POST",
+            body: formData,
+          });
+          if (uploadRes.ok) imageUrl = await uploadRes.text();
+        }
+        const payload = {
+          roomName,
+          roomType: document.getElementById("edit_type").value,
+          pricePerNight: parseInt(
+            document.getElementById("edit_price").value,
+            10,
+          ),
+          isAvailable:
+            document.getElementById("edit_available").value === "true",
+          image: imageUrl,
+        };
+        const response = await fetch(`/room/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (response.ok) {
+          alert("Cập nhật phòng thành công!");
+          window.location.reload();
+        } else {
+          handleBackendErrors(await response.json());
+        }
+      };
+      async function deleteRoom(id) {
+        if (confirm("Bạn có chắc chắn muốn xóa phòng này?")) {
+          try {
+            await fetch(`/room/${id}`, { method: "DELETE" });
+            window.location.reload();
+          } catch (err) {
+            alert("Lỗi khi xóa phòng!");
+          }
+        }
+      }
+    </script>
+  </body>
+</html>

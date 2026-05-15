@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Liên hệ - Meadows Q&Q</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <div class="nav-container">
+        <a href="index.html" class="logo">Meadows Q&Q</a>
+        <div class="nav-links">
+          <a href="index.html">Ph&ograve;ng</a>
+          <a href="booking.html">Đặt phòng</a>
+          <a href="index.html#location">V&#7883; tr&iacute;</a>
+          <a href="contact.html" class="active">Li&ecirc;n h&#7879;</a>
+          <a href="admin-login.html" class="btn-admin">Đăng nhập</a>
+        </div>
+      </div>
+    </header>
+
+    <div class="container">
+      <h2 class="page-title">Gửi Tin Nhắn Cho Chúng Tôi</h2>
+      <div class="form-box">
+        <form id="contactForm" class="grid-form">
+          <div>
+            <label>Họ và Tên</label><input type="text" id="name" required />
+          </div>
+          <div>
+            <label>Email</label><input type="email" id="email" required />
+          </div>
+          <div>
+            <label>Số điện thoại</label>
+            <input
+              type="text"
+              id="phone"
+              required
+              pattern="[0-9]+"
+              title="Số điện thoại chỉ được nhập số (không dấu cách, không chữ cái)"
+              maxlength="15"
+            />
+          </div>
+          <div>
+            <label>Tiêu đề</label><input type="text" id="subject" required />
+          </div>
+          <div class="full-width">
+            <label>Nội dung tin nhắn</label
+            ><textarea id="message" rows="5" maxlength="256" required></textarea
+            ><small id="messageWordCounter">0/256 ký tự</small>
+          </div>
+          <div class="full-width">
+            <button type="submit" class="btn-submit">Gửi Tin Nhắn</button>
+          </div>
+          <div
+            class="full-width"
+            id="backendMessage"
+            style="display: none; padding: 10px; border-radius: 6px"
+          ></div>
+        </form>
+      </div>
+    </div>
+
+    <footer>
+      <p>Meadows Q&Q © 2026 - Hệ thống đặt phòng trực tuyến</p>
+    </footer>
+
+    <script>
+      const MAX_MESSAGE_CHARS = 256;
+      const messageInput = document.getElementById("message");
+      const messageCounter = document.getElementById("messageWordCounter");
+      const backendMessage = document.getElementById("backendMessage");
+
+      function countCharacters(text) {
+        return text.length;
+      }
+
+      function updateMessageCounter() {
+        const chars = countCharacters(messageInput.value);
+        messageCounter.textContent = `${chars}/${MAX_MESSAGE_CHARS} ký tự`;
+        messageCounter.style.color = chars > MAX_MESSAGE_CHARS ? "#c0392b" : "";
+      }
+
+      function showBackendMessage(message, isError) {
+        backendMessage.textContent = message;
+        backendMessage.style.display = "block";
+        backendMessage.style.background = isError ? "#fdecea" : "#eafaf1";
+        backendMessage.style.color = isError ? "#c0392b" : "#1e8449";
+        backendMessage.style.border = isError
+          ? "1px solid #f5b7b1"
+          : "1px solid #a9dfbf";
+      }
+
+      async function readResponseBody(response) {
+        const text = await response.text();
+        if (!text) return null;
+        try {
+          return JSON.parse(text);
+        } catch {
+          return text;
+        }
+      }
+
+      function getBackendMessage(data, fallback) {
+        if (typeof data === "string") return data || fallback;
+        if (data && typeof data === "object") {
+          if (typeof data.message === "string") return data.message;
+          const messages = Object.values(data).filter(Boolean);
+          if (messages.length) return messages.join("\n");
+        }
+        return fallback;
+      }
+
+      messageInput.addEventListener("input", updateMessageCounter);
+      updateMessageCounter();
+
+      document.getElementById("contactForm").onsubmit = async function (e) {
+        e.preventDefault();
+        backendMessage.style.display = "none";
+        const name = document.getElementById("name").value.trim();
+        const email = document.getElementById("email").value.trim();
+        const phone = document.getElementById("phone").value.trim();
+        const subject = document.getElementById("subject").value.trim();
+        const message = document.getElementById("message").value.trim();
+
+        if (!name || !email || !subject || !message) {
+          alert("Vui lòng nhập đầy đủ họ tên, email, tiêu đề và nội dung!");
+          return;
+        }
+
+        if (countCharacters(message) > MAX_MESSAGE_CHARS) {
+          showBackendMessage(
+            `Nội dung tin nhắn không được vượt quá ${MAX_MESSAGE_CHARS} ký tự!`,
+            true,
+          );
+          return;
+        }
+
+        if (!document.getElementById("email").checkValidity()) {
+          alert("Email không hợp lệ!");
+          return;
+        }
+
+        const payload = {
+          title: `[Liên hệ] ${subject}`,
+          message: `Khách: ${name} | SĐT: ${phone} | Email: ${email}\nNội dung: ${message}`,
+        };
+
+        const response = await fetch("/notification", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const result = await readResponseBody(response);
+
+        if (response.ok) {
+          showBackendMessage(
+            getBackendMessage(result, "Tin nhắn đã được gửi tới hệ thống."),
+            false,
+          );
+          document.getElementById("contactForm").reset();
+          updateMessageCounter();
+        } else {
+          showBackendMessage(
+            getBackendMessage(result, "Gửi tin nhắn thất bại!"),
+            true,
+          );
+        }
+      };
+    </script>
+  </body>
+</html>

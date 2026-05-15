@@ -1,0 +1,17 @@
+# Maven / Backend
+backend/target/
+backend/.mvn/
+*.jar
+*.log
+*.class
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Node modules (nếu có sau này)
+node_modules/

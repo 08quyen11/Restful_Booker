@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Trang chủ - Meadows Q&Q</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <div class="nav-container">
+        <a href="index.html" class="logo">Meadows Q&Q</a>
+        <div class="nav-links">
+          <a href="index.html" class="active">Phòng</a>
+          <a href="booking.html">Đặt phòng</a>
+          <a href="#location">Vị trí</a>
+          <a href="contact.html">Liên hệ</a>
+          <a href="admin-login.html" class="btn-admin">Đăng nhập</a>
+        </div>
+      </div>
+    </header>
+
+    <div class="hero">
+      <div>
+        <h1>Chào mừng đến với Meadows Q&Q</h1>
+        <p>
+          Trải nghiệm không gian nghỉ dưỡng tuyệt vời với tiện nghi đẳng cấp và
+          dịch vụ hoàn hảo.
+        </p>
+      </div>
+    </div>
+
+    <div class="container">
+      <h2 class="page-title">Danh sách phòng nghỉ</h2>
+      <div id="roomsContainer" class="rooms-grid">
+        <p style="text-align: center; grid-column: span 3">
+          Đang tải danh sách phòng...
+        </p>
+      </div>
+    </div>
+
+    <div id="location" class="location-section">
+      <div class="container">
+        <h2 class="page-title">Vị trí</h2>
+        <div class="location-grid">
+          <div class="location-map">
+            <iframe
+              id="loc-map"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3151.835434509374!2d144.9537353!3d-37.8162159!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ad65d4c2b349649%3A0xb6899234e561db11!2sEnvato!5e0!3m2!1sen!2s!4v1234567890"
+              allowfullscreen=""
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+            ></iframe>
+          </div>
+          <div class="location-info">
+            <h3 id="loc-title">Meadows Q&Q</h3>
+            <p id="loc-description">
+              Meadows Q&Q nằm ở vị trí tuyệt đẹp thanh bình, chỉ cách trung tâm
+              thành phố vài phút lái xe.
+            </p>
+            <div class="location-details">
+              <div class="loc-item">
+                <div class="loc-icon">N</div>
+                <div class="loc-text">
+                  <span id="loc-address-1">Quy Nhơn, Gia Lai</span><br /><span
+                    id="loc-address-2"
+                    >Quy Nhơn, Bình Định </span
+                  ><small>Địa chỉ</small>
+                </div>
+              </div>
+              <div class="loc-item">
+                <div class="loc-icon">T</div>
+                <div class="loc-text">
+                  <span id="loc-phone">012 345 6789</span
+                  ><small>Điện thoại</small>
+                </div>
+              </div>
+              <div class="loc-item">
+                <div class="loc-icon">E</div>
+                <div class="loc-text">
+                  <span id="loc-email">info@meadowsqq.com</span
+                  ><small>Email</small>
+                </div>
+              </div>
+              <div class="loc-item">
+                <div class="loc-icon">G</div>
+                <div class="loc-text">
+                  Nhận phòng: <span id="loc-checkin">14:00</span> - Trả phòng:
+                  <span id="loc-checkout">11:00</span
+                  ><small>Giờ nhận / trả phòng</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p>Meadows Q&Q © 2026 - Hệ thống đặt phòng trực tuyến</p>
+    </footer>
+
+    <script>
+      window.onload = function () {
+        loadRooms();
+        loadLocation();
+      };
+
+      function formatCurrency(amount) {
+        return `${new Intl.NumberFormat("vi-VN").format(amount || 0)} VNĐ`;
+      }
+
+      function roomTypeLabel(type) {
+        const labels = {
+          "Single Room": "Phòng đơn",
+          "Double Room": "Phòng đôi",
+          "Suite Room": "Phòng suite",
+          Standard: "Tiêu chuẩn",
+          Deluxe: "Cao cấp",
+          Suite: "Phòng suite",
+        };
+        return labels[type] || type || "Tiêu chuẩn";
+      }
+
+      function loadRooms() {
+        fetch("/room")
+          .then((r) => r.json())
+          .then((rooms) => {
+            const container = document.getElementById("roomsContainer");
+            container.innerHTML = "";
+            if (rooms.length === 0) {
+              container.innerHTML =
+                "<p style='text-align:center; grid-column: span 3;'>Chưa có phòng nào.</p>";
+              return;
+            }
+            rooms.forEach((r) => {
+              const img =
+                r.image ||
+                "https://placehold.co/600x400?text=" +
+                  encodeURIComponent(r.roomName);
+              container.innerHTML += `
+                        <div class="room-card">
+                            <img src="${img}" alt="${r.roomName}">
+                            <div class="room-info">
+                                <h4>${r.roomName} - ${roomTypeLabel(r.roomType)}</h4>
+                                <p style="color: #666; font-size: 0.9rem; margin-bottom: 15px;">Phòng nghỉ tiện nghi, bao gồm bữa sáng và dịch vụ dọn phòng mỗi ngày.</p>
+                                <div class="room-footer">
+                                    <span class="price">${formatCurrency(r.pricePerNight)} <small style="font-size: 0.8rem; font-weight:normal; color:#888;">/ đêm</small></span>
+                                </div>
+                            </div>
+                        </div>`;
+            });
+          });
+      }
+
+      function loadLocation() {
+        fetch("/location")
+          .then((r) => (r.ok ? r.json() : null))
+          .then((location) => {
+            if (!location) return;
+            document.getElementById("loc-title").innerText =
+              location.title || "";
+            document.getElementById("loc-description").innerText =
+              location.description || "";
+            document.getElementById("loc-address-1").innerText =
+              location.addressLine1 || "";
+            document.getElementById("loc-address-2").innerText =
+              location.addressLine2 || "";
+            document.getElementById("loc-phone").innerText =
+              location.phone || "";
+            document.getElementById("loc-email").innerText =
+              location.email || "";
+            document.getElementById("loc-checkin").innerText =
+              location.checkinTime || "";
+            document.getElementById("loc-checkout").innerText =
+              location.checkoutTime || "";
+            if (location.mapEmbedUrl)
+              document.getElementById("loc-map").src = location.mapEmbedUrl;
+          })
+          .catch(() => {});
+      }
+    </script>
+  </body>
+</html>
