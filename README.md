@@ -3,7 +3,7 @@ Cách cài đặt và triển khai hệ thống:
 - Link dự án Github: https://github.com/08quyen11/Restful_Booker.git
 - Bước 1: Clone dự án về máy
 - Mở Terminal chạy: 
-- git clone https://github.com/08quyen11/Restful_Booker.git
++ git clone https://github.com/08quyen11/Restful_Booker.git
 - cd Restful_Booker
 - Bước 2: Cài đặt và chạy Backend (Spring Boot):
 	Mở thư mục backend trong VS Code:
