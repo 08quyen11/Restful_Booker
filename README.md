@@ -9,12 +9,8 @@ Mở Terminal chạy:
 	Mở thư mục backend trong VS Code
 	Cấu hình Database: Mở file: backend/src/main/resources/application.properties
     Sửa lại thông tin kết nối MySQL cho đúng:
-      spring.datasource.url=jdbc:mysql://localhost:3306/restful_booker_db?useSSL=false&serverTimezone=UTC
-      spring.datasource.username=root
       spring.datasource.password=123456     # ← thay bằng password MySQL của bạn
-      spring.jpa.hibernate.ddl-auto=update
-      spring.jpa.show-sql=true
-
+  
 -	Bước 3: Tạo Database trong MySQL 
       CREATE DATABASE restful_booker_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 -	Bước 4: Chạy Backend:
